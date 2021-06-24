@@ -59,7 +59,8 @@ const HistoryTimeline = (props) => {
                             )
                           })
                         }
-                        {shops.find(x => x.id === service.mechanic).shop_name}
+                        
+                        <p style={{ color: 'green', fontSize: 12, fontStyle: "italic" }}>Serviced At: {shops.find(x => x.id === service.mechanic).shop_name}</p>
                       </>
                     </Panel>
                   </Collapse>

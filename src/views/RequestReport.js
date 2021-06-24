@@ -42,11 +42,11 @@ function RequestReport() {
     useEffect(() => {
         (async () => {
             try {
-                if(services && serviceTypes){
+                if (services && serviceTypes) {
                     let odometerDataSet = doReturnOdometerData(services, serviceTypes)
                     setOdometerData(odometerDataSet)
                 }
-                
+
 
             } catch (error) {
                 console.log(error);
@@ -58,11 +58,11 @@ function RequestReport() {
     useEffect(() => {
         (async () => {
             try {
-                
-                if (selectedService == "all"){
+
+                if (selectedService == "all") {
                     setReportServices(services)
-                }else{
-                    var newArray =  services.filter(function (el) {
+                } else {
+                    var newArray = services.filter(function (el) {
                         return el.services.includes(selectedService); // Changed this so a home would match
                     });
                     setReportServices(newArray)
@@ -73,7 +73,7 @@ function RequestReport() {
             }
         })()
     }, [selectedService])
-    
+
 
     useEffect(() => {
         if (isFormValid) {
@@ -89,9 +89,12 @@ function RequestReport() {
                                 approvedServices = null
                             }
                         });
-                        console.log(approvedServices)
+                        if(approvedServices.length == 0){
+                            approvedServices = null
+                        }
                         setServices(approvedServices)
                         setReportServices(approvedServices)
+
                     })
 
                 } catch (error) {
@@ -100,6 +103,8 @@ function RequestReport() {
             })()
         } else {
             setServices(null)
+            setReportServices(null)
+            setOdometerData(null)
         }
     }, [formValue])
 
@@ -162,11 +167,11 @@ function RequestReport() {
                                 <Col className="gutter-row" span={12} justify="space-around">
                                     {services && serviceTypes && reportServices ?
                                         <>
-                                            <span style={{marginLeft: 100}}>
-                                            <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService}/>
-                                            <br/>
-                                            <br/>
-                                            <br/>
+                                            <span style={{ marginLeft: 100 }}>
+                                                <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
+                                                <br />
+                                                <br />
+                                                <br />
                                             </span>
                                             <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
                                         </>
@@ -176,7 +181,10 @@ function RequestReport() {
                             </Row>
                             <Row gutter={16} justify="space-around" align="top">
                                 <Col className="gutter-row" span={12}>
-                                    <Chart odometerData={odometerData}/>
+                                    {odometerData && services ?
+                                        <Chart odometerData={odometerData} />
+                                        : null
+                                    }
                                 </Col>
                                 <Col className="gutter-row" span={12}>
                                     {/* {doReturnSomething(services, serviceTypes)} */}
