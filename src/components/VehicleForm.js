@@ -46,7 +46,7 @@ const VehicleForm = (props) => {
                 rules={[
                     {
                         required: true,
-                        message: 'KA2134',
+                        message: 'KA2134'
                     },
                 ]}
             >
@@ -59,7 +59,7 @@ const VehicleForm = (props) => {
                 rules={[
                     {
                         required: true,
-                        message: 'Your NIC',
+                        message: 'Your NIC'
                     },
                 ]}
             >

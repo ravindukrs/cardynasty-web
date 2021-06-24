@@ -1,13 +1,21 @@
 import React, { useState, useContext, useEffect } from "react";
 import "../App.css";
 import "antd/dist/antd.css";
-import { Layout, Menu, Row, Col, Select } from "antd";
+import { Layout, Menu, Row, Col, Select, Alert } from "antd";
 import VehicleForm from '../components/VehicleForm'
 import HistoryTimeline from '../components/HistoryTimeline'
 import { FirebaseContext } from '../config/Firebase';
 import Chart from "../components/ServiceChart";
 import { doReturnOdometerData } from '../scripts/ServiceFilter'
 import SelectService from "../components/SelectService";
+import MarketMovement from "../components/MarketMovement";
+import AccidentChart from "../components/AccientChart";
+import VehicleDescription from "../components/VehicleDescription";
+import AccidentTable from "../components/AccidentTable";
+
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {
     DesktopOutlined,
@@ -34,10 +42,30 @@ function RequestReport() {
     const [serviceTypes, setServiceTypes] = useState(null)
     const [formValue, setFormValue] = useState(null)
     const [isFormValid, setIsFormValid] = useState(false)
-
     //Chart Data
     //Odometer Data
     const [odometerData, setOdometerData] = useState(null)
+    const [vehicleInfo, setVehicleInfo] = useState(false)
+    const [accidentCount, setAccidentCount] = useState(null)
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if (services && serviceTypes) {
+                    fetch(`https://us-central1-cardynasty-rs.cloudfunctions.net/app/vehicle?reg=${formValue.vehicleRegistration}`)
+                        .then(response => response.json())
+                        .then(data => setVehicleInfo(data[0]));
+
+                    fetch(`https://us-central1-cardynasty-rs.cloudfunctions.net/accidentapi/accidentsbyyear?reg=${formValue.vehicleRegistration}`)
+                        .then(response => response.json())
+                        .then(data => setAccidentCount(data));
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        })()
+    }, [services, serviceTypes])
 
     useEffect(() => {
         (async () => {
@@ -74,6 +102,12 @@ function RequestReport() {
         })()
     }, [selectedService])
 
+    useEffect(() => {
+        if (!services || services.length == 0) {
+            //"The Form is Invalid or Vehicle doesnt exist"
+            toast("Input a valid vehicle reigstration number")
+        }
+    }, [services])
 
     useEffect(() => {
         if (isFormValid) {
@@ -89,12 +123,11 @@ function RequestReport() {
                                 approvedServices = null
                             }
                         });
-                        if(approvedServices.length == 0){
+                        if (approvedServices.length == 0) {
                             approvedServices = null
                         }
                         setServices(approvedServices)
                         setReportServices(approvedServices)
-
                     })
 
                 } catch (error) {
@@ -161,33 +194,62 @@ function RequestReport() {
 
                             <Row gutter={16} justify="space-around" align="top">
                                 <Col className="gutter-row" span={12}>
+                                    <ToastContainer />
                                     <VehicleForm setFormValue={setFormValue} setIsFormValid={setIsFormValid} />
+                                    {services && serviceTypes && reportServices ?
+                                        (
+                                            <>
+                                                {vehicleInfo && vehicleInfo != [] ? (
+                                                    <>
+                                                    <VehicleDescription vehicleInfo={vehicleInfo}/>
+                                                    <MarketMovement />
+                                                    </>
+                                                ):null}
+                                                
 
+                                                {odometerData && services ?
+                                                    <>
+                                                        <Chart odometerData={odometerData} />
+                                                        {accidentCount ? (
+                                                            <AccidentChart vehicleInfo={vehicleInfo} accidentCount={accidentCount}/>
+                                                        ) : null}
+                                                    </>
+                                                    : null
+                                                }
+                                            </>
+                                        )
+
+                                        : null
+                                    }
                                 </Col>
                                 <Col className="gutter-row" span={12} justify="space-around">
-                                    {services && serviceTypes && reportServices ?
-                                        <>
-                                            <span style={{ marginLeft: 100 }}>
-                                                <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
-                                                <br />
-                                                <br />
-                                                <br />
-                                            </span>
-                                            <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
-                                        </>
-                                        : null}
+                                    <Row gutter={16} justify="space-around" align="top">
+                                        {services && serviceTypes && reportServices ?
+                                            <>
+                                                <span style={{ marginLeft: 100 }}>
+                                                    <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
+                                                    <br />
+                                                    <br />
+                                                    <br />
+                                                </span>
+                                                <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
+                                                {vehicleInfo && vehicleInfo != [] ? (
+                                                    <>
+                                                    <AccidentTable vehicleInfo={vehicleInfo}/>
+                                                    </>
+                                                ):null}
+                                            </>
+                                            : null}
+                                    </Row>
                                 </Col>
 
                             </Row>
                             <Row gutter={16} justify="space-around" align="top">
                                 <Col className="gutter-row" span={12}>
-                                    {odometerData && services ?
-                                        <Chart odometerData={odometerData} />
-                                        : null
-                                    }
+
                                 </Col>
                                 <Col className="gutter-row" span={12}>
-                                    {/* {doReturnSomething(services, serviceTypes)} */}
+                                    {/* <MarketMovement /> */}
                                 </Col>
 
                             </Row>
