@@ -23,11 +23,13 @@ const VehicleForm = (props) => {
         console.log('Success:', values);
         props.setFormValue(values)
         props.setIsFormValid(true)
+        props.setToken(null)
     };
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
         props.setIsFormValid(false)
+        props.setToken(null)
     };
 
     return (

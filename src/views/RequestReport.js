@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import "../App.css";
 import "antd/dist/antd.css";
-import { Layout, Menu, Row, Col, Select, Alert } from "antd";
+import { Layout, Menu, Row, Col, Select, Alert, Divider } from "antd";
 import VehicleForm from '../components/VehicleForm'
 import HistoryTimeline from '../components/HistoryTimeline'
 import { FirebaseContext } from '../config/Firebase';
@@ -12,7 +12,7 @@ import MarketMovement from "../components/MarketMovement";
 import AccidentChart from "../components/AccientChart";
 import VehicleDescription from "../components/VehicleDescription";
 import AccidentTable from "../components/AccidentTable";
-
+import StripeButton from "../components/StripeButton";
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -47,6 +47,7 @@ function RequestReport() {
     const [odometerData, setOdometerData] = useState(null)
     const [vehicleInfo, setVehicleInfo] = useState(false)
     const [accidentCount, setAccidentCount] = useState(null)
+    const [token, setToken] = useState(null)
 
     useEffect(() => {
         (async () => {
@@ -124,7 +125,11 @@ function RequestReport() {
                             }
                         });
                         if (approvedServices.length == 0) {
+                            alert("Sorry, this vehicle is invalid or have no service records.")
                             approvedServices = null
+                            setToken(null)
+                        } else {
+                            alert(`${approvedServices.length} Service Records were found on the vehicle. Proceed with payment for report`)
                         }
                         setServices(approvedServices)
                         setReportServices(approvedServices)
@@ -138,6 +143,7 @@ function RequestReport() {
             setServices(null)
             setReportServices(null)
             setOdometerData(null)
+            setToken(null)
         }
     }, [formValue])
 
@@ -195,23 +201,24 @@ function RequestReport() {
                             <Row gutter={16} justify="space-around" align="top">
                                 <Col className="gutter-row" span={12}>
                                     <ToastContainer />
-                                    <VehicleForm setFormValue={setFormValue} setIsFormValid={setIsFormValid} />
-                                    {services && serviceTypes && reportServices ?
+                                    <VehicleForm setFormValue={setFormValue} setIsFormValid={setIsFormValid} setToken={setToken} />
+
+                                    {services && serviceTypes && reportServices && token ?
                                         (
                                             <>
                                                 {vehicleInfo && vehicleInfo != [] ? (
                                                     <>
-                                                    <VehicleDescription vehicleInfo={vehicleInfo}/>
-                                                    <MarketMovement />
+                                                        <VehicleDescription vehicleInfo={vehicleInfo} />
+                                                        <MarketMovement />
                                                     </>
-                                                ):null}
-                                                
+                                                ) : null}
+
 
                                                 {odometerData && services ?
                                                     <>
                                                         <Chart odometerData={odometerData} />
                                                         {accidentCount ? (
-                                                            <AccidentChart vehicleInfo={vehicleInfo} accidentCount={accidentCount}/>
+                                                            <AccidentChart vehicleInfo={vehicleInfo} accidentCount={accidentCount} />
                                                         ) : null}
                                                     </>
                                                     : null
@@ -222,34 +229,34 @@ function RequestReport() {
                                         : null
                                     }
                                 </Col>
-                                <Col className="gutter-row" span={12} justify="space-around">
-                                    <Row gutter={16} justify="space-around" align="top">
-                                        {services && serviceTypes && reportServices ?
+                                <Col className="gutter-row" span={12} justify="center">
+                                  
+                                    {services && !token ? (
+                                        <>
+                                           
+                                            <StripeButton price={services.length * 1.5} setToken={setToken} />
+                                            <Divider />
+                                            {services.length} Service Records were found for this vehicle. Please proceed for payment to view report.
+                                            <i>Note: Reports are based on service record count.</i><br/><br/>
+                                        </>
+                                    ) : null}
+                                        {services && serviceTypes && reportServices && token?
                                             <>
+                                            
                                                 <span style={{ marginLeft: 100 }}>
                                                     <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
-                                                    <br />
-                                                    <br />
-                                                    <br />
+                                                    
                                                 </span>
+                                                <Divider/>
                                                 <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
                                                 {vehicleInfo && vehicleInfo != [] ? (
                                                     <>
-                                                    <AccidentTable vehicleInfo={vehicleInfo}/>
+                                                        <AccidentTable vehicleInfo={vehicleInfo} />
                                                     </>
-                                                ):null}
+                                                ) : null}
                                             </>
                                             : null}
-                                    </Row>
-                                </Col>
-
-                            </Row>
-                            <Row gutter={16} justify="space-around" align="top">
-                                <Col className="gutter-row" span={12}>
-
-                                </Col>
-                                <Col className="gutter-row" span={12}>
-                                    {/* <MarketMovement /> */}
+                                   
                                 </Col>
 
                             </Row>
