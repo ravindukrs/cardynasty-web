@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import "../App.css";
 import "antd/dist/antd.css";
-import { Layout, Menu, Row, Col, Select, Alert, Divider } from "antd";
+import { Layout, Menu, Row, Col, Select, Alert, Divider, Typography } from "antd";
 import VehicleForm from '../components/VehicleForm'
 import HistoryTimeline from '../components/HistoryTimeline'
 import { FirebaseContext } from '../config/Firebase';
@@ -13,8 +13,10 @@ import AccidentChart from "../components/AccientChart";
 import VehicleDescription from "../components/VehicleDescription";
 import AccidentTable from "../components/AccidentTable";
 import StripeButton from "../components/StripeButton";
+import MileageCard from "../components/MileageCard";
 
 import { ToastContainer, toast } from 'react-toastify';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 import {
@@ -27,6 +29,7 @@ import {
 
 const { Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
+const { Title } = Typography
 
 function RequestReport() {
     const contextValue = useContext(FirebaseContext);
@@ -48,6 +51,8 @@ function RequestReport() {
     const [vehicleInfo, setVehicleInfo] = useState(false)
     const [accidentCount, setAccidentCount] = useState(null)
     const [token, setToken] = useState(null)
+    const [predictedMileage, setPredictedMileage] = useState(null)
+
 
     useEffect(() => {
         (async () => {
@@ -67,6 +72,33 @@ function RequestReport() {
             }
         })()
     }, [services, serviceTypes])
+
+    useEffect(() => {
+        (async () => {
+            try {
+                let acceptedBodies = ["Body Type","Hatchback","Sedan","SUV","Crossover","MPV","Van","Double Cabin","Mini Van","Station Wagon","Micro Van","Single Cabin","High Roof","Convertible","Coupe","Pick Up","Mini Vehicles","Truck"]
+                if (vehicleInfo && acceptedBodies.includes(vehicleInfo.body)) {
+                    fetch('https://carynasty-mileage-regressor.azurewebsites.net/predict', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            body: vehicleInfo.body,
+                            year: vehicleInfo.year,
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => setPredictedMileage(data.mileage))
+                }
+
+
+            } catch (error) {
+                console.log(error);
+            }
+        })()
+    }, [vehicleInfo])
 
     useEffect(() => {
         (async () => {
@@ -216,6 +248,9 @@ function RequestReport() {
 
                                                 {odometerData && services ?
                                                     <>
+                                                        <Title level={5}>Mileage Data</Title>
+                                                        {predictedMileage? <MileageCard predictedMileage={predictedMileage} odometerData={odometerData}/> : null}
+                                                        <Divider />
                                                         <Chart odometerData={odometerData} />
                                                         {accidentCount ? (
                                                             <AccidentChart vehicleInfo={vehicleInfo} accidentCount={accidentCount} />
@@ -230,40 +265,40 @@ function RequestReport() {
                                     }
                                 </Col>
                                 <Col className="gutter-row" span={12} justify="center">
-                                  
+
                                     {services && !token ? (
                                         <>
-                                           
+
                                             <StripeButton price={services.length * 1.5} setToken={setToken} />
                                             <Divider />
                                             {services.length} Service Records were found for this vehicle. Please proceed for payment to view report.
-                                            <i>Note: Reports are based on service record count.</i><br/><br/>
+                                            <i>Note: Reports are based on service record count.</i><br /><br />
                                         </>
                                     ) : null}
-                                        {services && serviceTypes && reportServices && token?
-                                            <>
-                                            
-                                                <span style={{ marginLeft: 100 }}>
-                                                    <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
-                                                    
-                                                </span>
-                                                <Divider/>
-                                                <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
-                                                {vehicleInfo && vehicleInfo != [] ? (
-                                                    <>
-                                                        <AccidentTable vehicleInfo={vehicleInfo} />
-                                                    </>
-                                                ) : null}
-                                            </>
-                                            : null}
-                                   
+                                    {services && serviceTypes && reportServices && token ?
+                                        <>
+
+                                            <span style={{ marginLeft: 100 }}>
+                                                <SelectService serviceList={serviceTypes} setSelectedService={setSelectedService} />
+
+                                            </span>
+                                            <Divider />
+                                            <HistoryTimeline data={reportServices} serviceList={serviceTypes} />
+                                            {vehicleInfo && vehicleInfo != [] ? (
+                                                <>
+                                                    <AccidentTable vehicleInfo={vehicleInfo} />
+                                                </>
+                                            ) : null}
+                                        </>
+                                        : null}
+
                                 </Col>
 
                             </Row>
                         </div>
                     </Content>
                     <Footer style={{ textAlign: "center" }}>
-                        CarDynasty ©2021
+                        CarDynasty ©2021 V4
                     </Footer>
                 </Layout>
             </Layout>
