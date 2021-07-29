@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@platform-os/testcafe-helpers": "^2.3.2",
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -15,6 +16,8 @@
     "react-stripe-checkout": "^2.6.3",
     "react-toastify": "^7.0.4",
     "recharts": "^2.0.9",
+    "testcafe": "^1.15.1",
+    "testcafe-reporter-xunit": "^2.1.0",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
