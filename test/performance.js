@@ -2,7 +2,7 @@ import { getPerformanceMetrics } from '@platform-os/testcafe-helpers';
 
 fixture('Speedtest').page("http://localhost:3000/");
 
-test("ebay speedtest", async t => {
+test("Performance Test", async t => {
   const perf = await getPerformanceMetrics({t})
   const computed = perf.computed
 
