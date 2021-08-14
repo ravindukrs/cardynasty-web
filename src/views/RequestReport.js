@@ -26,6 +26,7 @@ import {
     TeamOutlined,
     UserOutlined,
 } from "@ant-design/icons";
+import moment from "moment";
 
 const { Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -57,6 +58,20 @@ function RequestReport() {
     useEffect(() => {
         (async () => {
             try {
+                if(token){
+                    console.log("Triggred Firebase Call")
+                    let response=await contextValue.db.collection('report-sales').doc(token.id).set({"token":token.id, "customerNic":formValue.nic, "token_email":token.email, "vehicleReg":vehicleInfo.id, "paymentUSD":services.length * 1.5, "transactionTime": moment().format("YYYY-MM-DD HH:mm:ss")})
+                    console.log("response: ", response)
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        })()
+    }, [token])
+
+    useEffect(() => {
+        (async () => {
+            try {
                 if (services && serviceTypes) {
                     fetch(`https://us-central1-cardynasty-rs.cloudfunctions.net/app/vehicle?reg=${formValue.vehicleRegistration}`)
                         .then(response => response.json())
@@ -76,7 +91,7 @@ function RequestReport() {
     useEffect(() => {
         (async () => {
             try {
-                let acceptedBodies = ["Body Type","Hatchback","Sedan","SUV","Crossover","MPV","Van","Double Cabin","Mini Van","Station Wagon","Micro Van","Single Cabin","High Roof","Convertible","Coupe","Pick Up","Mini Vehicles","Truck"]
+                let acceptedBodies = ["Hatchback","Sedan","SUV","Crossover","MPV","Van","Double Cabin","Mini Van","Station Wagon","Micro Van","Single Cabin","High Roof","Convertible","Coupe","Pick Up","Mini Vehicles","Truck"]
                 if (vehicleInfo && acceptedBodies.includes(vehicleInfo.body)) {
                     fetch('https://carynasty-mileage-regressor.azurewebsites.net/predict', {
                         method: 'POST',
@@ -206,21 +221,6 @@ function RequestReport() {
                         <Menu.Item key="1" icon={<PieChartOutlined />}>
                             Report
                         </Menu.Item>
-                        {/* <Menu.Item key="2" icon={<DesktopOutlined />}>
-                            Ravindu
-            </Menu.Item>
-                        <SubMenu key="sub1" icon={<UserOutlined />} title="User">
-                            <Menu.Item key="3">Tom</Menu.Item>
-                            <Menu.Item key="4">Bill</Menu.Item>
-                            <Menu.Item key="5">Alex</Menu.Item>
-                        </SubMenu>
-                        <SubMenu key="sub2" icon={<TeamOutlined />} title="Team">
-                            <Menu.Item key="6">Team 1</Menu.Item>
-                            <Menu.Item key="8">Team 2</Menu.Item>
-                        </SubMenu>
-                        <Menu.Item key="9" icon={<FileOutlined />}>
-                            Files
-            </Menu.Item> */}
                     </Menu>
                 </Sider>
                 <Layout className="site-layout">
@@ -241,7 +241,7 @@ function RequestReport() {
                                                 {vehicleInfo && vehicleInfo != [] ? (
                                                     <>
                                                         <VehicleDescription vehicleInfo={vehicleInfo} />
-                                                        <MarketMovement />
+                                                        {/* <MarketMovement /> */}
                                                     </>
                                                 ) : null}
 
